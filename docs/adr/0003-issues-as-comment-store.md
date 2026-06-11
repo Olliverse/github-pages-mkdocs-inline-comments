@@ -1,6 +1,6 @@
 # ADR-003: GitHub Issues as the comment store
 
-**Status:** proposed · **Date:** 2026-06-11
+**Status:** accepted · **Date:** 2026-06-11
 
 ## Context
 
