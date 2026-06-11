@@ -1,6 +1,6 @@
 # ADR-004: One issue per annotation
 
-**Status:** proposed · **Date:** 2026-06-11
+**Status:** accepted · **Date:** 2026-06-11
 
 ## Context
 
