@@ -1,0 +1,21 @@
+.md-main__inner {
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+.md-content {
+  max-width: none !important;
+}
+
+.md-content__inner {
+  margin: 0 1rem !important;
+  max-width: none !important;
+}
+
+.md-sidebar--primary {
+  width: 15rem;
+}
+
+.md-container {
+  max-width: none !important;
+}

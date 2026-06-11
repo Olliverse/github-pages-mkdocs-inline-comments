@@ -1,0 +1,46 @@
+:root {
+  --md-text-font: -apple-system, "Segoe UI", Arial, sans-serif;
+
+  --brand-dark-teal: #035970;
+  --brand-light-blue: #39b3e6;
+  --brand-medium-blue: #079eda;
+  --brand-soft-blue: #8cb7e3;
+  --brand-success: #00893e;
+  --brand-warning: #f0ab00;
+  --brand-error: #e22718;
+}
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: var(--brand-dark-teal);
+  --md-primary-fg-color--light: #0a6e89;
+  --md-primary-fg-color--dark: #023f50;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+
+  --md-accent-fg-color: var(--brand-medium-blue);
+  --md-accent-fg-color--transparent: rgba(7, 158, 218, 0.1);
+
+  --md-typeset-a-color: var(--brand-dark-teal);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #023f50;
+  --md-primary-fg-color--light: var(--brand-dark-teal);
+  --md-primary-fg-color--dark: #012b38;
+  --md-primary-bg-color: #ffffff;
+
+  --md-accent-fg-color: var(--brand-light-blue);
+  --md-accent-fg-color--transparent: rgba(57, 179, 230, 0.1);
+
+  --md-typeset-a-color: var(--brand-light-blue);
+}
+
+.md-header__button.md-logo img {
+  height: 1.6rem;
+  width: auto;
+}
+
+[data-md-color-scheme="default"] .md-nav__link--active,
+[data-md-color-scheme="default"] .md-tabs__link--active {
+  color: var(--brand-dark-teal);
+}

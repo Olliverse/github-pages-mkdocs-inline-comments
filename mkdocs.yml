@@ -1,3 +1,78 @@
 site_name: github-pages-mkdocs-inline-comments
+site_description: Inline review comments on rendered MkDocs GitHub Pages, stored as GitHub issues
+site_url: "https://olliverse.github.io/github-pages-mkdocs-inline-comments/"
+repo_url: https://github.com/Olliverse/github-pages-mkdocs-inline-comments
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+
+nav:
+  - Home: index.md
+  - Use Cases: use-cases.md
+  - ADRs:
+      - ADR-001 — Static PAT Auth: adr/0001-static-pat-auth.md
+      - ADR-002 — Frontend Widget Stack: adr/0002-frontend-stack.md
+      - ADR-003 — Issues as Comment Store: adr/0003-issues-as-comment-store.md
+      - ADR-004 — One Issue per Annotation: adr/0004-one-issue-per-annotation.md
+  - QDRs:
+      - QDR-001 — Orphaned Annotations: qdr/0001-orphaned-annotations.md
+      - QDR-002 — Silent Unauthenticated State: qdr/0002-silent-unauthenticated-state.md
+
 theme:
   name: material
+  language: en
+  custom_dir: overrides
+  features:
+    - navigation.indexes
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+  palette:
+    - scheme: default
+      media: "(prefers-color-scheme: light)"
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - scheme: slate
+      media: "(prefers-color-scheme: dark)"
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - likec4:
+      use_dot: false
+  - panzoom:
+      mermaid: true
+      full_screen: true
+      key: none
+
+extra_css:
+  - stylesheets/theme.css
+  - stylesheets/fullwidth.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - md_in_html
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.snippets
+  - pymdownx.tabbed
+  - pymdownx.tasklist
+  - pymdownx.tilde
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
