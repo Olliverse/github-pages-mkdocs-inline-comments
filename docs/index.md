@@ -1,3 +1,3 @@
-# github-comments
+# github-pages-mkdocs-inline-comments
 
-Design docs for the github-comments mkdocs plugin will land here.
+Design docs for the github-pages-mkdocs-inline-comments plugin will land here.
