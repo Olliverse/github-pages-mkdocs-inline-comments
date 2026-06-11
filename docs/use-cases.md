@@ -52,23 +52,27 @@ The MVP delivers the six use cases below, ordered by annotation lifecycle: authe
 
 ## UC-3: View the page's comments
 
-**Goal:** the reviewer sees the open annotations for the current page — the entry point for UC-4/5/6.
+**Goal:** the reviewer sees the open annotations for the current page — as inline highlights in the text and as a list panel — the entry point for UC-4/5/6.
 
 **Precondition:** UC-1 completed (reading issues on access-controlled repos requires the token anyway).
 
-**Trigger:** the reviewer opens the widget's comments panel.
+**Trigger:** page load (highlights) or opening the widget's comments panel.
 
 **Main flow:**
 
 1. Widget fetches open issues with the configured label from the API and filters them to the current page's `src_uri` via the annotation block.
-2. The panel lists each annotation: quoted text, comment, author, link to the issue.
+2. Each annotation's TextQuoteSelector is re-anchored against the rendered content; the matched range is highlighted.
+3. Clicking a highlight opens the annotation's detail popover: quote, comment, author, issue link, and the UC-4/5/6 actions.
+4. The panel lists the same annotations: quoted text, comment, author, issue link.
 
 **Alternative flows:**
 
-- *No open annotations:* panel shows an empty state.
-- *API error:* panel shows the error.
+- *No stored token:* nothing is fetched on page load; opening the panel starts UC-1.
+- *Selector does not anchor* (quoted text edited or removed): no highlight; the annotation still appears in the panel, marked as not anchorable (anchor orphan, [QDR-001](qdr/0001-orphaned-annotations.md)).
+- *No open annotations:* no highlights; panel shows an empty state.
+- *API error:* page renders without highlights; panel shows the error.
 
-**Postcondition:** none (read only). The MVP renders a list panel; highlighting the quotes inline in the text is a later enhancement.
+**Postcondition:** none (read only).
 
 ## UC-4: Update a comment
 
@@ -78,7 +82,7 @@ The MVP delivers the six use cases below, ordered by annotation lifecycle: authe
 
 **Main flow:**
 
-1. Reviewer chooses *edit* on a panel entry and changes the comment text.
+1. Reviewer chooses *edit* on the annotation (panel entry or highlight popover) and changes the comment text.
 2. Widget updates the issue via `PATCH /repos/{owner}/{repo}/issues/{number}`, regenerating the human-readable body; the annotation block and anchor stay untouched.
 
 **Alternative flows:**
@@ -95,7 +99,7 @@ The MVP delivers the six use cases below, ordered by annotation lifecycle: authe
 
 **Main flow:**
 
-1. Reviewer chooses *resolve* on a panel entry.
+1. Reviewer chooses *resolve* on the annotation (panel entry or highlight popover).
 2. Widget closes the issue via `PATCH` with `state: closed`, `state_reason: completed`.
 3. The entry disappears from the panel.
 
@@ -109,7 +113,7 @@ The MVP delivers the six use cases below, ordered by annotation lifecycle: authe
 
 **Main flow:**
 
-1. Reviewer chooses *delete* on a panel entry and confirms.
+1. Reviewer chooses *delete* on the annotation (panel entry or highlight popover) and confirms.
 2. Widget closes the issue via `PATCH` with `state: closed`, `state_reason: not_planned`.
 3. The entry disappears from the panel.
 
@@ -117,7 +121,6 @@ The MVP delivers the six use cases below, ordered by annotation lifecycle: authe
 
 ## Out of scope (MVP)
 
-- Inline highlighting of existing annotations in the page text (UC-3 ships a list panel only)
 - Replies / threads on annotations
 - OAuth "Sign in with GitHub" (v2 path, [ADR-001](adr/0001-static-pat-auth.md))
 - Consumer/fix-loop tooling (a prompt convention around `gh issue` suffices, [ADR-003](adr/0003-issues-as-comment-store.md))
