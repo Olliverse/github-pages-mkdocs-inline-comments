@@ -1,8 +1,8 @@
 # Use cases — MVP
 
-The MVP delivers exactly two use cases. Everything else — rendering existing annotations as highlights, reply threads, OAuth sign-in, fix-loop tooling — is explicitly out of scope and listed at the bottom.
+The MVP delivers the six use cases below, ordered by annotation lifecycle: authenticate, create, view, update, resolve, retract. Everything else is explicitly out of scope and listed at the bottom.
 
-**Actor** in both cases: the **Reviewer** — a person reading the rendered docs site in a browser who has (or can create) a GitHub account with access to the target repository.
+**Actor** in all cases: the **Reviewer** — a person reading the rendered docs site in a browser who has (or can create) a GitHub account with access to the target repository.
 
 ## UC-1: Store a PAT
 
@@ -10,7 +10,7 @@ The MVP delivers exactly two use cases. Everything else — rendering existing a
 
 **Precondition:** the reviewer has a fine-grained PAT scoped to the target repository with Issues read/write ([ADR-001](adr/0001-static-pat-auth.md)). The widget links to the token-creation page of the configured GitHub instance.
 
-**Trigger:** the reviewer opens the widget's settings, or attempts UC-2 without a stored token.
+**Trigger:** the reviewer opens the widget's settings, or attempts any other use case without a stored token.
 
 **Main flow:**
 
@@ -29,7 +29,7 @@ The MVP delivers exactly two use cases. Everything else — rendering existing a
 
 **Goal:** an inline finding on the rendered page becomes a GitHub issue carrying the anchor metadata.
 
-**Precondition:** UC-1 completed (token stored); the page was built with the plugin, so it carries its source path (`src_uri`) and the widget assets.
+**Precondition:** UC-1 completed; the page was built with the plugin, so it carries its source path (`src_uri`) and the widget assets.
 
 **Trigger:** the reviewer selects text inside the page's content area.
 
@@ -50,10 +50,75 @@ The MVP delivers exactly two use cases. Everything else — rendering existing a
 
 **Postcondition:** an open, labeled issue authored by the reviewer exists, containing everything a consumer needs to locate the finding in the markdown source.
 
+## UC-3: View the page's comments
+
+**Goal:** the reviewer sees the open annotations for the current page — the entry point for UC-4/5/6.
+
+**Precondition:** UC-1 completed (reading issues on access-controlled repos requires the token anyway).
+
+**Trigger:** the reviewer opens the widget's comments panel.
+
+**Main flow:**
+
+1. Widget fetches open issues with the configured label from the API and filters them to the current page's `src_uri` via the annotation block.
+2. The panel lists each annotation: quoted text, comment, author, link to the issue.
+
+**Alternative flows:**
+
+- *No open annotations:* panel shows an empty state.
+- *API error:* panel shows the error.
+
+**Postcondition:** none (read only). The MVP renders a list panel; highlighting the quotes inline in the text is a later enhancement.
+
+## UC-4: Update a comment
+
+**Goal:** correct or sharpen the comment text of an existing annotation.
+
+**Precondition:** UC-3 shows the annotation; the reviewer is its author (or has write access — enforced by the API, not the widget).
+
+**Main flow:**
+
+1. Reviewer chooses *edit* on a panel entry and changes the comment text.
+2. Widget updates the issue via `PATCH /repos/{owner}/{repo}/issues/{number}`, regenerating the human-readable body; the annotation block and anchor stay untouched.
+
+**Alternative flows:**
+
+- *API rejects (no permission):* widget shows the error; nothing changes.
+
+**Postcondition:** the issue body carries the new comment text; anchor metadata is unchanged.
+
+## UC-5: Resolve a comment
+
+**Goal:** mark a finding as done.
+
+**Precondition:** UC-3 shows the annotation.
+
+**Main flow:**
+
+1. Reviewer chooses *resolve* on a panel entry.
+2. Widget closes the issue via `PATCH` with `state: closed`, `state_reason: completed`.
+3. The entry disappears from the panel.
+
+**Postcondition:** the finding no longer appears as actionable to any consumer. (The usual path remains the fix loop closing via `fixes #N` commits — manual resolve covers "fixed otherwise" and "obsolete".)
+
+## UC-6: Delete (retract) a comment
+
+**Goal:** withdraw an annotation that should not have been made.
+
+**Note:** the REST API cannot truly delete issues (only the GraphQL `deleteIssue` mutation can, and it requires repo admin rights). Retraction is therefore mapped to closing with `state_reason: not_planned` — distinguishable from a resolved finding, invisible to consumers, but with an audit trail.
+
+**Main flow:**
+
+1. Reviewer chooses *delete* on a panel entry and confirms.
+2. Widget closes the issue via `PATCH` with `state: closed`, `state_reason: not_planned`.
+3. The entry disappears from the panel.
+
+**Postcondition:** the annotation is closed as not-planned; consumers ignore it; repo admins may hard-delete it on GitHub if required.
+
 ## Out of scope (MVP)
 
-- Displaying existing annotations as highlights on the page
+- Inline highlighting of existing annotations in the page text (UC-3 ships a list panel only)
 - Replies / threads on annotations
 - OAuth "Sign in with GitHub" (v2 path, [ADR-001](adr/0001-static-pat-auth.md))
 - Consumer/fix-loop tooling (a prompt convention around `gh issue` suffices, [ADR-003](adr/0003-issues-as-comment-store.md))
-- Editing or retracting annotations from the page (use the issue on GitHub directly)
+- Orphan reconciliation for deleted/moved pages (tracked as [QDR-001](qdr/0001-orphaned-annotations.md))
