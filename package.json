@@ -1,0 +1,8 @@
+{
+  "name": "github-pages-mkdocs-inline-comments",
+  "private": true,
+  "description": "Pinned Node tooling for mkdocs-likec4 (invokes `npx likec4`).",
+  "devDependencies": {
+    "likec4": "1.57.0"
+  }
+}

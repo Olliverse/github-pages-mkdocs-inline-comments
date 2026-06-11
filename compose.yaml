@@ -1,0 +1,9 @@
+services:
+  docs:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/docs
+      # Keep the image's installed node_modules from being shadowed by the bind mount.
+      - /docs/node_modules
