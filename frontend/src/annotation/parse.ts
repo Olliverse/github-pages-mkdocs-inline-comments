@@ -25,6 +25,7 @@ function toAnnotationData(v: unknown): AnnotationData | "newer" | null {
   if (typeof o["src"] !== "string" || typeof o["page"] !== "string") return null;
   if (parseSelector(o["selector"]) === null) return null;
   if (o["client"] !== undefined && typeof o["client"] !== "string") return null;
+  if (o["scope"] !== undefined && typeof o["scope"] !== "string") return null;
   return o as unknown as AnnotationData;
 }
 

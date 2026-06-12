@@ -5,7 +5,7 @@ import { GitHubClient } from "./github/client";
 import type { GitHubUser } from "./github/client";
 import { parseIssueBody } from "./annotation/parse";
 import type { Annotation, AnnotationData, TextQuoteSelector } from "./annotation/record";
-import { buildAnnotationBlock, buildIssueBody, buildIssueTitle } from "./annotation/serialize";
+import { buildAnnotationBlock, buildIssueBody, buildIssueTitle, titleScope } from "./annotation/serialize";
 import { anchorSelector, describeRange } from "./anchor/index";
 import { errorText } from "./ui/dom";
 import { createFab } from "./ui/fab";
@@ -180,12 +180,16 @@ export function createController(cfg: WidgetConfig): Controller {
   }
 
   async function createAnnotation(selector: TextQuoteSelector, comment: string): Promise<Annotation> {
-    const data: AnnotationData = {
+    const base: AnnotationData = {
       ghc: 1,
       src: cfg.src,
       page: cfg.page,
       selector,
+    };
+    const data: AnnotationData = {
+      ...base,
       ...(cfg.client ? { client: cfg.client } : {}),
+      scope: titleScope(base),
     };
     const body = buildIssueBody(comment, data, { pageHref: pageHref() });
     const issue = await client.createIssue(cfg.repo, buildIssueTitle(data), body, [cfg.label]);

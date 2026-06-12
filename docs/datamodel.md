@@ -30,7 +30,8 @@ instead of describing it as intended behavior.
     "prefix": "nothing is fetched on page load — ",
     "suffix": " (QDR-002); opening the panel"
   },
-  "client": "mkdocs-inline-comments/0.1.0"
+  "client": "mkdocs-inline-comments/0.1.0",
+  "scope": "use-cases"
 }
 ```
 
@@ -54,6 +55,7 @@ The prose zone is everything between the end of zone 1 and the opening `<details
 | `page` | string | yes | Site-relative URL of the rendered page (`page.url`), e.g. `use-cases/`. What the widget matches to find the current page's annotations. |
 | `selector` | object | yes | [W3C Web Annotation TextQuoteSelector](https://www.w3.org/TR/annotation-model/#text-quote-selector): `type` (always `"TextQuoteSelector"`), `exact` (the annotated text, required), `prefix`/`suffix` (≈32 chars of surrounding context, optional but always written by the widget — they disambiguate repeated phrases). Content-addressed: survives line shifts and edits elsewhere on the page. |
 | `client` | string | no | Producer name/version. Informational only — consumers must not branch on it. |
+| `scope` | string | no | The page identifier used in [issue titles](#title): `src` relative to the docs dir (typically without the `docs/` prefix) and without the `.md` suffix, e.g. `use-cases`. Shipped so consumers need not parse titles; titles remain display-only. |
 
 Consumers **must ignore unknown fields** (forward compatibility). Additive optional fields do not bump the version; any breaking change does. A consumer encountering `ghc` greater than what it knows must skip the record and report it, not guess.
 
@@ -78,7 +80,8 @@ As JSON Schema:
         "suffix": { "type": "string" }
       }
     },
-    "client": { "type": "string" }
+    "client": { "type": "string" },
+    "scope": { "type": "string" }
   }
 }
 ```

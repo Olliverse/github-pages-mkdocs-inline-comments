@@ -11,6 +11,7 @@ export interface AnnotationData {
   page: string;
   selector: TextQuoteSelector;
   client?: string;
+  scope?: string;
 }
 
 export interface Annotation {

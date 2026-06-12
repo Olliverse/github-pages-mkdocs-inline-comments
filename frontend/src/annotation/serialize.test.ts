@@ -72,6 +72,13 @@ describe("roundtrip", () => {
     const parsed = parseIssueBody(buildIssueBody("c", d, { pageHref }));
     expect(parsed?.data).toEqual(d);
   });
+
+  it("roundtrips the optional scope field", () => {
+    const d = data({ scope: "use-cases" });
+    const parsed = parseIssueBody(buildIssueBody("c", d, { pageHref }));
+    expect(parsed?.data).toEqual(d);
+    expect(parsed?.data.scope).toBe("use-cases");
+  });
 });
 
 describe("UC-4 rebuild via rawBlock", () => {

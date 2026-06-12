@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { createController } from "./controller";
 import { LocalStorageTokenProvider } from "./auth/token-store";
+import { parseIssueBody } from "./annotation/parse";
 import type { WidgetConfig } from "./config";
 
 beforeAll(() => {
@@ -119,6 +120,19 @@ describe("controller create flow", () => {
     const mark = document.querySelector('mark.ghc-highlight[data-ghc-issue="7"]');
     expect(mark).toBeTruthy();
     expect(mark?.classList.contains("ghc-highlight--active")).toBe(true);
+  });
+
+  it("ships the title scope as the scope field of the created payload", async () => {
+    const fetchMock = stubApi();
+    await startSignedIn(fetchMock);
+    composeAndSend("quick brown fox", "needs a citation");
+    await vi.waitFor(() => {
+      expect(document.querySelector(".ghc-popover--detail")).toBeTruthy();
+    });
+    const create = fetchMock.mock.calls.find((c) => (c[1] as RequestInit | undefined)?.method === "POST");
+    const payload = JSON.parse((create?.[1] as RequestInit).body as string) as { title: string; body: string };
+    expect(payload.title).toContain("review(index):");
+    expect(parseIssueBody(payload.body)?.data.scope).toBe("index");
   });
 
   it("clears the draft and the active highlight when composing again", async () => {

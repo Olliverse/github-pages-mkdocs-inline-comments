@@ -77,6 +77,22 @@ describe("parseIssueBody", () => {
     expect(parsed?.comment).toContain("extra");
   });
 
+  it("accepts a payload with a scope field", () => {
+    const body = `${zone1}\n\n${block(JSON.stringify({ ...data, scope: "use-cases" }))}\n`;
+    const parsed = parseIssueBody(body);
+    expect(parsed?.data.scope).toBe("use-cases");
+  });
+
+  it("accepts a payload without a scope field", () => {
+    const body = `${zone1}\n\n${block(JSON.stringify(data))}\n`;
+    expect(parseIssueBody(body)?.data.scope).toBeUndefined();
+  });
+
+  it("rejects a payload with a non-string scope", () => {
+    const body = `${zone1}\n\n${block(JSON.stringify({ ...data, scope: 7 }))}\n`;
+    expect(parseIssueBody(body)).toBeNull();
+  });
+
   it("preserves unknown json fields on the parsed data", () => {
     const extended = { ...data, reviewRound: 2 };
     const body = `${zone1}\n\n${block(JSON.stringify(extended))}\n`;
