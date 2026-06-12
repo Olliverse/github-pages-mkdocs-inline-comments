@@ -1,5 +1,5 @@
 import type { Annotation } from "../annotation/record";
-import { el, link } from "./dom";
+import { button, el, errorText, link } from "./dom";
 
 export interface PopoverHandle {
   close(): void;
@@ -61,5 +61,60 @@ export function showDetail(annotation: Annotation, anchorRect: DOMRect): Popover
   const comment = el("p", "ghc-popover__comment", annotation.comment || "(no comment)");
   if (!annotation.comment) comment.classList.add("ghc-popover__comment--empty");
   handle.body.appendChild(comment);
+  return handle;
+}
+
+export interface CreatedIssueRef {
+  issueNumber: number;
+  htmlUrl: string;
+}
+
+export interface ComposerCallbacks {
+  getDraft(): string;
+  setDraft(value: string): void;
+  onSubmit(comment: string): Promise<CreatedIssueRef>;
+}
+
+export function showComposer(quote: string, anchorRect: DOMRect, cb: ComposerCallbacks): PopoverHandle {
+  const handle = openPopover(anchorRect, "ghc-popover--composer");
+  const box = handle.body;
+  box.appendChild(el("blockquote", "ghc-popover__quote", quote));
+  const textarea = el("textarea", "ghc-textarea");
+  textarea.placeholder = "Write a review comment (optional — the quote alone can be the finding)";
+  textarea.value = cb.getDraft();
+  textarea.addEventListener("input", () => cb.setDraft(textarea.value));
+  box.appendChild(textarea);
+  const error = el("p", "ghc-error");
+  error.hidden = true;
+  const actions = el("div", "ghc-popover__actions");
+  const send = button("Send", "ghc-button ghc-button--primary", () => {
+    send.disabled = true;
+    error.hidden = true;
+    cb.onSubmit(textarea.value)
+      .then((created) => {
+        box.replaceChildren();
+        const done = el("p", "ghc-popover__comment", "Annotation created: ");
+        done.appendChild(link(created.htmlUrl, `#${created.issueNumber}`));
+        box.appendChild(done);
+        const closeActions = el("div", "ghc-popover__actions");
+        closeActions.appendChild(button("Close", "ghc-button", () => handle.close()));
+        box.appendChild(closeActions);
+      })
+      .catch((e: unknown) => {
+        error.textContent = errorText(e);
+        error.hidden = false;
+        send.disabled = false;
+      });
+  });
+  actions.appendChild(send);
+  box.appendChild(actions);
+  box.appendChild(error);
+  textarea.focus();
+  return handle;
+}
+
+export function showTokenGate(anchorRect: DOMRect, form: HTMLElement): PopoverHandle {
+  const handle = openPopover(anchorRect, "ghc-popover--token");
+  handle.body.appendChild(form);
   return handle;
 }

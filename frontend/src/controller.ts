@@ -4,13 +4,18 @@ import type { TokenProvider } from "./auth/token-store";
 import { GitHubClient } from "./github/client";
 import type { GitHubUser } from "./github/client";
 import { parseIssueBody } from "./annotation/parse";
-import type { Annotation } from "./annotation/record";
-import { anchorSelector } from "./anchor/index";
+import type { Annotation, AnnotationData, TextQuoteSelector } from "./annotation/record";
+import { buildIssueBody, buildIssueTitle } from "./annotation/serialize";
+import { anchorSelector, describeRange } from "./anchor/index";
 import { errorText } from "./ui/dom";
+import { createFab } from "./ui/fab";
+import type { Fab } from "./ui/fab";
 import { highlightRange } from "./ui/highlights";
 import { createPanel } from "./ui/panel";
 import type { Panel, PanelItem } from "./ui/panel";
-import { closePopover, showDetail } from "./ui/popover";
+import { closePopover, showComposer, showDetail, showTokenGate } from "./ui/popover";
+import type { CreatedIssueRef } from "./ui/popover";
+import { createTokenForm } from "./ui/token-form";
 
 export interface Controller {
   start(): () => void;
@@ -24,8 +29,14 @@ export function createController(cfg: WidgetConfig): Controller {
   const anchored = new Map<number, Range>();
   const cleanups = new Map<number, () => void>();
   let panel: Panel | null = null;
+  let fab: Fab | null = null;
   let contentRoot: Element = document.body;
   let stopped = false;
+  let draft = "";
+
+  function pageHref(): string {
+    return window.location.href.split("#")[0] ?? window.location.href;
+  }
 
   function resolveContentRoot(): Element {
     if (cfg.contentSelector) {
@@ -81,6 +92,68 @@ export function createController(cfg: WidgetConfig): Controller {
 
   function openDetail(annotation: Annotation, rect: DOMRect): void {
     showDetail(annotation, rect);
+  }
+
+  function onAnnotate(range: Range): void {
+    const selector = describeRange(contentRoot, range);
+    if (!selector) return;
+    const rect = range.getBoundingClientRect();
+    if (!user) {
+      showTokenGate(
+        rect,
+        createTokenForm({
+          tokenUrl: cfg.tokenUrl,
+          onSubmit: async (token) => {
+            await signIn(token);
+            openComposer(selector, rect);
+          },
+        }),
+      );
+      return;
+    }
+    openComposer(selector, rect);
+  }
+
+  function openComposer(selector: TextQuoteSelector, rect: DOMRect): void {
+    showComposer(selector.exact, rect, {
+      getDraft: () => draft,
+      setDraft: (value) => {
+        draft = value;
+      },
+      onSubmit: async (comment) => {
+        const created = await createAnnotation(selector, comment);
+        draft = "";
+        return created;
+      },
+    });
+  }
+
+  async function createAnnotation(selector: TextQuoteSelector, comment: string): Promise<CreatedIssueRef> {
+    const data: AnnotationData = {
+      ghc: 1,
+      src: cfg.src,
+      page: cfg.page,
+      selector,
+      ...(cfg.client ? { client: cfg.client } : {}),
+    };
+    const body = buildIssueBody(comment, data, { pageHref: pageHref() });
+    const issue = await client.createIssue(cfg.repo, buildIssueTitle(data), body, [cfg.label]);
+    const parsed = parseIssueBody(issue.body ?? body) ?? parseIssueBody(body);
+    if (parsed) {
+      annotations = [
+        ...annotations,
+        {
+          issueNumber: issue.number,
+          htmlUrl: issue.html_url,
+          author: user?.login ?? "",
+          comment: parsed.comment,
+          data: parsed.data,
+          rawBlock: parsed.rawBlock,
+        },
+      ];
+      renderAnnotations();
+    }
+    return { issueNumber: issue.number, htmlUrl: issue.html_url };
   }
 
   async function signIn(token: string): Promise<void> {
@@ -144,6 +217,7 @@ export function createController(cfg: WidgetConfig): Controller {
 
   function start(): () => void {
     contentRoot = resolveContentRoot();
+    fab = createFab(contentRoot, onAnnotate);
     if (tokens.get()) {
       ensurePanel().setLoading(true);
       void resume();
@@ -152,12 +226,12 @@ export function createController(cfg: WidgetConfig): Controller {
       stopped = true;
       clearHighlights();
       closePopover();
+      fab?.destroy();
+      fab = null;
       panel?.destroy();
       panel = null;
     };
   }
-
-  void signIn;
 
   return { start };
 }
