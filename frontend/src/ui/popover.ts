@@ -8,7 +8,7 @@ export interface PopoverHandle {
 
 const POPOVER_WIDTH = 360;
 
-let active: { box: HTMLElement; dispose(): void; onClose?: () => void } | null = null;
+let active: { box: HTMLElement; dispose(): void; onClose?: () => void; previous: Element | null } | null = null;
 
 export function closePopover(): void {
   if (active) {
@@ -16,12 +16,14 @@ export function closePopover(): void {
     active = null;
     current.dispose();
     current.box.remove();
+    if (current.previous instanceof HTMLElement && current.previous.isConnected) current.previous.focus();
     current.onClose?.();
   }
 }
 
 export function openPopover(anchorRect: DOMRect, className: string, onClose?: () => void): PopoverHandle {
   closePopover();
+  const previous = document.activeElement;
   const box = el("div", `ghc-popover ${className}`);
   box.setAttribute("data-ghc-ui", "");
   const margin = 8;
@@ -49,7 +51,11 @@ export function openPopover(anchorRect: DOMRect, className: string, onClose?: ()
     document.removeEventListener("mousedown", onMouseDown, true);
     document.removeEventListener("keydown", onKeyDown, true);
   };
-  active = { box, dispose, onClose };
+  active = { box, dispose, onClose, previous };
+  queueMicrotask(() => {
+    if (active?.box !== box || box.contains(document.activeElement)) return;
+    box.querySelector<HTMLElement>("button, [href], textarea, input")?.focus();
+  });
   return { body: box, close: closePopover };
 }
 

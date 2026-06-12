@@ -172,6 +172,43 @@ describe("controller create flow", () => {
     expect(textarea.value).toBe("draft for fox");
   });
 
+  it("opens the detail from a focused highlight and returns focus on Escape", async () => {
+    const fetchMock = stubApi();
+    await startSignedIn(fetchMock);
+    composeAndSend("quick brown fox", "needs a citation");
+    await vi.waitFor(() => {
+      expect(document.querySelector(".ghc-popover--detail")).toBeTruthy();
+    });
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(document.querySelector(".ghc-popover")).toBeNull();
+    const mark = document.querySelector('mark.ghc-highlight[data-ghc-issue="7"]') as HTMLElement;
+    expect(mark.getAttribute("tabindex")).toBe("0");
+    expect(mark.getAttribute("role")).toBe("button");
+    mark.focus();
+    mark.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    const detail = document.querySelector(".ghc-popover--detail") as HTMLElement;
+    expect(detail).toBeTruthy();
+    await vi.waitFor(() => {
+      expect(detail.contains(document.activeElement)).toBe(true);
+    });
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(document.querySelector(".ghc-popover")).toBeNull();
+    expect(document.activeElement).toBe(mark);
+  });
+
+  it("closes the panel with Escape and labels it for assistive tech", async () => {
+    const fetchMock = stubApi();
+    await startSignedIn(fetchMock);
+    const toggle = document.querySelector("button.ghc-panel-toggle") as HTMLButtonElement;
+    toggle.click();
+    const panel = document.querySelector("aside.ghc-panel") as HTMLElement;
+    expect(panel.hidden).toBe(false);
+    expect(panel.getAttribute("aria-label")).toBe("Review comments");
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(panel.hidden).toBe(true);
+    expect(document.activeElement).toBe(toggle);
+  });
+
   it("keeps the composer open with the error when the create fails", async () => {
     const fetchMock = stubApi({ createStatus: 422 });
     await startSignedIn(fetchMock);

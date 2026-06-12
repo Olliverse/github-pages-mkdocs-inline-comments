@@ -42,9 +42,17 @@ export function highlightRange(range: Range, issueNumber: number, onClick: Highl
     const mark = doc.createElement("mark");
     mark.className = "ghc-highlight";
     mark.setAttribute("data-ghc-issue", String(issueNumber));
+    mark.setAttribute("tabindex", "0");
+    mark.setAttribute("role", "button");
     parent.replaceChild(mark, node);
     mark.appendChild(node);
     mark.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onClick(issueNumber, mark);
+    });
+    mark.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
       event.stopPropagation();
       onClick(issueNumber, mark);

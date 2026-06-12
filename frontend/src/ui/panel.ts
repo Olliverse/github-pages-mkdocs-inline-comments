@@ -45,10 +45,20 @@ export function createPanel(cb: PanelCallbacks): Panel {
 
   const panel = el("aside", "ghc-panel");
   panel.setAttribute("data-ghc-ui", "");
+  panel.setAttribute("aria-label", "Review comments");
   panel.hidden = true;
 
   document.body.appendChild(toggle);
   document.body.appendChild(panel);
+
+  const onKeyDown = (event: KeyboardEvent): void => {
+    if (event.key !== "Escape" || !open) return;
+    if (document.querySelector(".ghc-popover")) return;
+    open = false;
+    render();
+    toggle.focus();
+  };
+  document.addEventListener("keydown", onKeyDown, true);
 
   function render(): void {
     count.textContent = String(items.length);
@@ -132,6 +142,7 @@ export function createPanel(cb: PanelCallbacks): Panel {
       render();
     },
     destroy(): void {
+      document.removeEventListener("keydown", onKeyDown, true);
       toggle.remove();
       panel.remove();
     },
