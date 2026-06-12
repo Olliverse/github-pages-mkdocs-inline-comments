@@ -149,6 +149,29 @@ describe("controller create flow", () => {
     expect(document.querySelector("mark.ghc-highlight--active")).toBeNull();
   });
 
+  it("keys the composer draft by selection", async () => {
+    const fetchMock = stubApi();
+    await startSignedIn(fetchMock);
+    selectText("quick brown fox");
+    (document.querySelector("button.ghc-fab") as HTMLButtonElement).click();
+    let textarea = document.querySelector(".ghc-popover--composer textarea") as HTMLTextAreaElement;
+    textarea.value = "draft for fox";
+    textarea.dispatchEvent(new Event("input"));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(document.querySelector(".ghc-popover--composer")).toBeNull();
+
+    selectText("lazy dog");
+    (document.querySelector("button.ghc-fab") as HTMLButtonElement).click();
+    textarea = document.querySelector(".ghc-popover--composer textarea") as HTMLTextAreaElement;
+    expect(textarea.value).toBe("");
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+
+    selectText("quick brown fox");
+    (document.querySelector("button.ghc-fab") as HTMLButtonElement).click();
+    textarea = document.querySelector(".ghc-popover--composer textarea") as HTMLTextAreaElement;
+    expect(textarea.value).toBe("draft for fox");
+  });
+
   it("keeps the composer open with the error when the create fails", async () => {
     const fetchMock = stubApi({ createStatus: 422 });
     await startSignedIn(fetchMock);

@@ -31,7 +31,7 @@ export function createController(cfg: WidgetConfig): Controller {
   let fab: Fab | null = null;
   let contentRoot: Element = document.body;
   let stopped = false;
-  let draft = "";
+  const drafts = new Map<string, string>();
 
   function pageHref(): string {
     return window.location.href.split("#")[0] ?? window.location.href;
@@ -164,15 +164,20 @@ export function createController(cfg: WidgetConfig): Controller {
     openComposer(selector, rect);
   }
 
+  function draftKey(selector: TextQuoteSelector): string {
+    return [selector.prefix ?? "", selector.exact, selector.suffix ?? ""].join("\u0000");
+  }
+
   function openComposer(selector: TextQuoteSelector, rect: DOMRect): void {
+    const key = draftKey(selector);
     showComposer(selector.exact, rect, {
-      getDraft: () => draft,
+      getDraft: () => drafts.get(key) ?? "",
       setDraft: (value) => {
-        draft = value;
+        drafts.set(key, value);
       },
       onSubmit: async (comment) => {
         const annotation = await createAnnotation(selector, comment);
-        draft = "";
+        drafts.delete(key);
         const mark = contentRoot.querySelector(`mark.ghc-highlight[data-ghc-issue="${annotation.issueNumber}"]`);
         openDetail(annotation, mark instanceof HTMLElement ? mark.getBoundingClientRect() : rect);
       },
