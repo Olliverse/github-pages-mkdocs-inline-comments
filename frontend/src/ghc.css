@@ -1,21 +1,37 @@
 :root {
-  --ghc-bg: var(--md-default-bg-color, #ffffff);
-  --ghc-fg: var(--md-default-fg-color, #1f2933);
-  --ghc-fg-light: var(--md-default-fg-color--light, #5f6b7a);
-  --ghc-accent: var(--md-accent-fg-color, #4051b5);
-  --ghc-border: var(--md-default-fg-color--lightest, #d4d9de);
+  --ghc-highlight-bg: rgba(255, 196, 0, 0.35);
+  --ghc-highlight-bg-hover: rgba(255, 196, 0, 0.55);
+  --ghc-error: #c92a2a;
   --ghc-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   --ghc-z: 1000;
 }
 
+/* Material declares its --md-* vars on [data-md-color-scheme] (body), not :root — proxies declared on :root would always resolve to the light fallbacks. */
+[data-md-color-scheme] {
+  --ghc-bg: var(--md-default-bg-color);
+  --ghc-fg: var(--md-default-fg-color);
+  --ghc-fg-light: var(--md-default-fg-color--light);
+  --ghc-accent: var(--md-accent-fg-color);
+  --ghc-accent-on: var(--md-accent-bg-color);
+  --ghc-border: color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+  --ghc-hover: color-mix(in srgb, var(--md-default-fg-color) 6%, transparent);
+}
+
+[data-md-color-scheme="slate"] {
+  --ghc-error: #ff6b6b;
+  --ghc-highlight-bg: rgba(255, 170, 50, 0.28);
+  --ghc-highlight-bg-hover: rgba(255, 170, 50, 0.45);
+  --ghc-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
 .ghc-highlight {
-  background: rgba(255, 196, 0, 0.35);
+  background: var(--ghc-highlight-bg);
   color: inherit;
   cursor: pointer;
 }
 
 .ghc-highlight:hover {
-  background: rgba(255, 196, 0, 0.55);
+  background: var(--ghc-highlight-bg-hover);
 }
 
 .ghc-button {
@@ -37,11 +53,11 @@
 .ghc-button--primary {
   background: var(--ghc-accent);
   border-color: var(--ghc-accent);
-  color: #ffffff;
+  color: var(--ghc-accent-on);
 }
 
 .ghc-button--primary:hover {
-  color: #ffffff;
+  color: var(--ghc-accent-on);
   opacity: 0.85;
 }
 
@@ -75,7 +91,7 @@
 }
 
 .ghc-error {
-  color: #c92a2a;
+  color: var(--ghc-error);
   font-size: 0.72rem;
   margin: 0.4rem 0 0;
 }
@@ -209,7 +225,7 @@
 }
 
 .ghc-panel__item:hover {
-  background: rgba(127, 127, 127, 0.08);
+  background: var(--ghc-hover);
 }
 
 .ghc-panel__comment {
@@ -223,7 +239,7 @@
 }
 
 .ghc-panel__orphan {
-  color: #c92a2a;
+  color: var(--ghc-error);
 }
 
 .ghc-token-form__intro,
@@ -242,7 +258,7 @@
   border: 1px solid var(--ghc-accent);
   border-radius: 999px;
   background: var(--ghc-accent);
-  color: #ffffff;
+  color: var(--ghc-accent-on);
   font: inherit;
   font-size: 0.72rem;
   box-shadow: var(--ghc-shadow);
