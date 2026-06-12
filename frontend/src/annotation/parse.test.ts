@@ -77,6 +77,27 @@ describe("parseIssueBody", () => {
     expect(parsed?.comment).toContain("extra");
   });
 
+  it("recovers the payload from an unclosed details block", () => {
+    const unclosed = `<details>\n<summary>annotation data (machine-readable — do not edit)</summary>\n\n\`\`\`json\n${JSON.stringify(data)}\n\`\`\``;
+    const body = `${zone1}\n\nStill a finding.\n\n${unclosed}\n`;
+    const parsed = parseIssueBody(body);
+    expect(parsed?.data).toEqual(data);
+    expect(parsed?.comment).toBe("Still a finding.");
+    expect(parsed?.rawBlock).toBe(unclosed);
+  });
+
+  it("returns null for an unclosed details block without a recoverable payload", () => {
+    expect(parseIssueBody(`${zone1}\n\n<details>\n<summary>annotation data</summary>\n\nno fence at all`)).toBeNull();
+    expect(parseIssueBody(`${zone1}\n\n<details>\n<summary>annotation data</summary>\n\n\`\`\`json\n{"ghc": 1, broken\n\`\`\``)).toBeNull();
+  });
+
+  it("keeps parsing the closed block when a later unclosed details is garbage", () => {
+    const body = `${zone1}\n\n${block(JSON.stringify(data))}\n\n<details>\n<summary>oops</summary>\n\ntruncated`;
+    const parsed = parseIssueBody(body);
+    expect(parsed?.data).toEqual(data);
+    expect(parsed?.rawBlock).toBe(block(JSON.stringify(data)));
+  });
+
   it("accepts a payload with a scope field", () => {
     const body = `${zone1}\n\n${block(JSON.stringify({ ...data, scope: "use-cases" }))}\n`;
     const parsed = parseIssueBody(body);

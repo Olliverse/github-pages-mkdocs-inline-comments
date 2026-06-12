@@ -36,23 +36,37 @@ interface BlockCandidate {
   json: unknown;
 }
 
+function toCandidate(raw: string, start: number): BlockCandidate | null {
+  const fenceRe = /```json\s*\n([\s\S]*?)\n\s*```/i;
+  const fence = fenceRe.exec(raw);
+  if (!fence || fence[1] === undefined) return null;
+  let json: unknown;
+  try {
+    json = JSON.parse(fence[1]);
+  } catch {
+    return null;
+  }
+  if (typeof json !== "object" || json === null || Array.isArray(json)) return null;
+  if (!Object.prototype.hasOwnProperty.call(json, "ghc")) return null;
+  return { start, end: start + raw.length, raw, json };
+}
+
 function findAnnotationBlock(body: string): BlockCandidate | null {
   const detailsRe = /<details(?:\s[^>]*)?>[\s\S]*?<\/details>/gi;
-  const fenceRe = /```json\s*\n([\s\S]*?)\n\s*```/i;
   let last: BlockCandidate | null = null;
+  let scanned = 0;
   for (const m of body.matchAll(detailsRe)) {
-    const raw = m[0];
-    const fence = fenceRe.exec(raw);
-    if (!fence || fence[1] === undefined) continue;
-    let json: unknown;
-    try {
-      json = JSON.parse(fence[1]);
-    } catch {
-      continue;
-    }
-    if (typeof json !== "object" || json === null || Array.isArray(json)) continue;
-    if (!Object.prototype.hasOwnProperty.call(json, "ghc")) continue;
-    last = { start: m.index, end: m.index + raw.length, raw, json };
+    scanned = m.index + m[0].length;
+    const candidate = toCandidate(m[0], m.index);
+    if (candidate) last = candidate;
+  }
+  const openRe = /<details(?:\s[^>]*)?>/gi;
+  openRe.lastIndex = scanned;
+  let open: RegExpExecArray | null = null;
+  for (let m = openRe.exec(body); m !== null; m = openRe.exec(body)) open = m;
+  if (open) {
+    const candidate = toCandidate(body.slice(open.index).trimEnd(), open.index);
+    if (candidate) last = candidate;
   }
   return last;
 }
