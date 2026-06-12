@@ -2,7 +2,7 @@
 
 Hello! This is the design site for an MkDocs plugin that brings **inline review comments to rendered GitHub Pages**: select text on a published docs page, write a comment, send — and the finding lands as a GitHub issue, anchored to the exact passage. Because findings live in GitHub, they can be pulled via the `gh` CLI, handed to an AI agent that fixes the docs, and closed when resolved.
 
-**Status:** design phase — no code yet.
+**Status:** MVP implemented — the plugin runs on this very site (not yet on PyPI).
 
 ## Where to look
 
