@@ -42,7 +42,7 @@ The MVP delivers the six use cases below, ordered as a review session actually r
 
 **Alternative flows:**
 
-- *No stored token:* nothing is fetched on page load — the widget stays fully silent by design ([QDR-002](qdr/0002-silent-unauthenticated-state.md)); opening the panel starts UC-1.
+- *No stored token:* nothing is fetched on page load — the widget stays fully silent by design ([QDR-002](qdr/0002-silent-unauthenticated-state.md)): no panel, no highlights. The only entry point is selecting text (UC-3), whose composer shows the UC-1 token form first.
 - *Selector does not anchor* (quoted text edited or removed): no highlight; the annotation still appears in the panel, marked as not anchorable (anchor orphan, [QDR-001](qdr/0001-orphaned-annotations.md)).
 - *No open annotations:* no highlights; panel shows an empty state.
 - *API error:* page renders without highlights; panel shows the error.
