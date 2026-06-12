@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mkdocs-inline-comments"
+version = "0.1.0"
+description = "Inline review comments on rendered MkDocs sites, stored as GitHub issues"
+license = "Apache-2.0"
+requires-python = ">=3.9"
+dependencies = ["mkdocs>=1.6"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.entry-points."mkdocs.plugins"]
+inline-comments = "mkdocs_inline_comments.plugin:InlineCommentsPlugin"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mkdocs_inline_comments"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

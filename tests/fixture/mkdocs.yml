@@ -1,0 +1,7 @@
+site_name: ghc fixture
+site_url: https://example.com/fixture/
+repo_url: https://github.com/acme/widget-fixture
+theme: mkdocs
+plugins:
+  - search
+  - inline-comments
