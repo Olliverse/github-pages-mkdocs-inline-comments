@@ -35,7 +35,7 @@ The MVP delivers the six use cases below, ordered as a review session actually r
 
 **Main flow:**
 
-1. Widget fetches open issues with the configured label from the API and filters them to the current page's `src_uri` via the annotation block.
+1. Widget fetches open issues with the configured label from the API and filters them to the current page via the annotation block ([data model](datamodel.md)).
 2. Each annotation's TextQuoteSelector is re-anchored against the rendered content; the matched range is highlighted.
 3. Clicking a highlight opens the annotation's detail popover: quote, comment, author, issue link, and the UC-4/5/6 actions.
 4. The panel lists the same annotations: quoted text, comment, author, issue link.
@@ -63,7 +63,7 @@ The MVP delivers the six use cases below, ordered as a review session actually r
 2. Reviewer clicks it; a popover with a comment field opens, showing the selected text as a quote.
 3. Reviewer writes the comment and sends.
 4. Widget computes the TextQuoteSelector (exact quote, prefix, suffix) for the selection.
-5. Widget creates the issue via `POST /repos/{owner}/{repo}/issues`: self-describing title (page + quote excerpt), human-readable body plus the machine-readable annotation block (see annotation format spec), the configured label. One issue per annotation ([ADR-004](adr/0004-one-issue-per-annotation.md)).
+5. Widget creates the issue via `POST /repos/{owner}/{repo}/issues`: self-describing title (page + quote excerpt), human-readable body plus the machine-readable annotation block (see [data model](datamodel.md)), the configured label. One issue per annotation ([ADR-004](adr/0004-one-issue-per-annotation.md)).
 6. Widget confirms success, links the created issue, and renders the new highlight.
 
 **Alternative flows:**
