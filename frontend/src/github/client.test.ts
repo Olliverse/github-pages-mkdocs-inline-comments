@@ -105,6 +105,20 @@ describe("GitHubClient error mapping", () => {
     now.mockRestore();
   });
 
+  it("falls back to the generic message for absurd retry-after values", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(
+          { message: "too many requests" },
+          { status: 429, headers: { "retry-after": "9".repeat(400) } },
+        ),
+      ),
+    );
+    const err = (await client().getUser().catch((e: unknown) => e)) as GitHubApiError;
+    expect(err.message).toBe("GitHub rate limit exceeded — try again later");
+  });
+
   it("falls back to a generic rate limit message without reset headers", async () => {
     vi.stubGlobal(
       "fetch",

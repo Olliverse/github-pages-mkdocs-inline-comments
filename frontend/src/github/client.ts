@@ -33,9 +33,13 @@ function rateLimitWaitSeconds(headers: Headers): number | null {
   return null;
 }
 
+const MAX_WAIT_SECONDS = 24 * 60 * 60;
+
 function rateLimitMessage(headers: Headers): string {
   const seconds = rateLimitWaitSeconds(headers);
-  if (seconds === null || seconds < 0) return "GitHub rate limit exceeded — try again later";
+  if (seconds === null || !Number.isFinite(seconds) || seconds <= 0 || seconds > MAX_WAIT_SECONDS) {
+    return "GitHub rate limit exceeded — try again later";
+  }
   return `GitHub rate limit exceeded — try again in ${Math.max(1, Math.ceil(seconds / 60))} min`;
 }
 
