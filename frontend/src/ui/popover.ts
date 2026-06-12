@@ -158,15 +158,10 @@ export function showDetail(annotation: Annotation, anchorRect: DOMRect, cb: Deta
   return handle;
 }
 
-export interface CreatedIssueRef {
-  issueNumber: number;
-  htmlUrl: string;
-}
-
 export interface ComposerCallbacks {
   getDraft(): string;
   setDraft(value: string): void;
-  onSubmit(comment: string): Promise<CreatedIssueRef>;
+  onSubmit(comment: string): Promise<void>;
 }
 
 export function showComposer(quote: string, anchorRect: DOMRect, cb: ComposerCallbacks): PopoverHandle {
@@ -184,21 +179,11 @@ export function showComposer(quote: string, anchorRect: DOMRect, cb: ComposerCal
   const send = button("Send", "ghc-button ghc-button--primary", () => {
     send.disabled = true;
     error.hidden = true;
-    cb.onSubmit(textarea.value)
-      .then((created) => {
-        box.replaceChildren();
-        const done = el("p", "ghc-popover__comment", "Annotation created: ");
-        done.appendChild(link(created.htmlUrl, `#${created.issueNumber}`));
-        box.appendChild(done);
-        const closeActions = el("div", "ghc-popover__actions");
-        closeActions.appendChild(button("Close", "ghc-button", () => handle.close()));
-        box.appendChild(closeActions);
-      })
-      .catch((e: unknown) => {
-        error.textContent = errorText(e);
-        error.hidden = false;
-        send.disabled = false;
-      });
+    cb.onSubmit(textarea.value).catch((e: unknown) => {
+      error.textContent = errorText(e);
+      error.hidden = false;
+      send.disabled = false;
+    });
   });
   actions.appendChild(send);
   box.appendChild(actions);

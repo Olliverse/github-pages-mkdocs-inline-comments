@@ -5,7 +5,7 @@ import { GitHubClient } from "./github/client";
 import type { GitHubUser } from "./github/client";
 import { parseIssueBody } from "./annotation/parse";
 import type { Annotation, AnnotationData, TextQuoteSelector } from "./annotation/record";
-import { buildIssueBody, buildIssueTitle } from "./annotation/serialize";
+import { buildAnnotationBlock, buildIssueBody, buildIssueTitle } from "./annotation/serialize";
 import { anchorSelector, describeRange } from "./anchor/index";
 import { errorText } from "./ui/dom";
 import { createFab } from "./ui/fab";
@@ -14,7 +14,6 @@ import { highlightRange } from "./ui/highlights";
 import { createPanel } from "./ui/panel";
 import type { Panel, PanelItem } from "./ui/panel";
 import { closePopover, showComposer, showDetail, showTokenGate } from "./ui/popover";
-import type { CreatedIssueRef } from "./ui/popover";
 import { createTokenForm } from "./ui/token-form";
 
 export interface Controller {
@@ -172,14 +171,15 @@ export function createController(cfg: WidgetConfig): Controller {
         draft = value;
       },
       onSubmit: async (comment) => {
-        const created = await createAnnotation(selector, comment);
+        const annotation = await createAnnotation(selector, comment);
         draft = "";
-        return created;
+        const mark = contentRoot.querySelector(`mark.ghc-highlight[data-ghc-issue="${annotation.issueNumber}"]`);
+        openDetail(annotation, mark instanceof HTMLElement ? mark.getBoundingClientRect() : rect);
       },
     });
   }
 
-  async function createAnnotation(selector: TextQuoteSelector, comment: string): Promise<CreatedIssueRef> {
+  async function createAnnotation(selector: TextQuoteSelector, comment: string): Promise<Annotation> {
     const data: AnnotationData = {
       ghc: 1,
       src: cfg.src,
@@ -190,21 +190,17 @@ export function createController(cfg: WidgetConfig): Controller {
     const body = buildIssueBody(comment, data, { pageHref: pageHref() });
     const issue = await client.createIssue(cfg.repo, buildIssueTitle(data), body, [cfg.label]);
     const parsed = parseIssueBody(issue.body ?? body) ?? parseIssueBody(body);
-    if (parsed) {
-      annotations = [
-        ...annotations,
-        {
-          issueNumber: issue.number,
-          htmlUrl: issue.html_url,
-          author: user?.login ?? "",
-          comment: parsed.comment,
-          data: parsed.data,
-          rawBlock: parsed.rawBlock,
-        },
-      ];
-      renderAnnotations();
-    }
-    return { issueNumber: issue.number, htmlUrl: issue.html_url };
+    const annotation: Annotation = {
+      issueNumber: issue.number,
+      htmlUrl: issue.html_url,
+      author: user?.login ?? "",
+      comment: parsed?.comment ?? comment.trim(),
+      data: parsed?.data ?? data,
+      rawBlock: parsed?.rawBlock ?? buildAnnotationBlock(data),
+    };
+    annotations = [...annotations, annotation];
+    renderAnnotations();
+    return annotation;
   }
 
   async function signIn(token: string): Promise<void> {
