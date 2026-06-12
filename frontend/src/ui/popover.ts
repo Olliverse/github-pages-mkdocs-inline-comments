@@ -55,12 +55,98 @@ export function renderAnnotationHeader(box: HTMLElement, annotation: Annotation)
   box.appendChild(meta);
 }
 
-export function showDetail(annotation: Annotation, anchorRect: DOMRect): PopoverHandle {
+export interface DetailCallbacks {
+  onEdit(newComment: string): Promise<void>;
+  onResolve(): Promise<void>;
+  onRetract(): Promise<void>;
+}
+
+export function showDetail(annotation: Annotation, anchorRect: DOMRect, cb: DetailCallbacks): PopoverHandle {
   const handle = openPopover(anchorRect, "ghc-popover--detail");
-  renderAnnotationHeader(handle.body, annotation);
-  const comment = el("p", "ghc-popover__comment", annotation.comment || "(no comment)");
-  if (!annotation.comment) comment.classList.add("ghc-popover__comment--empty");
-  handle.body.appendChild(comment);
+  const box = handle.body;
+  renderAnnotationHeader(box, annotation);
+  let commentText = annotation.comment;
+  const comment = el("p", "ghc-popover__comment");
+  const setComment = (value: string): void => {
+    commentText = value;
+    comment.textContent = value || "(no comment)";
+    comment.classList.toggle("ghc-popover__comment--empty", value === "");
+  };
+  setComment(commentText);
+  box.appendChild(comment);
+
+  const error = el("p", "ghc-error");
+  error.hidden = true;
+  const actions = el("div", "ghc-popover__actions");
+
+  const fail = (e: unknown): void => {
+    error.textContent = errorText(e);
+    error.hidden = false;
+  };
+
+  const run = (action: () => Promise<void>, buttons: HTMLButtonElement[], closeAfter: boolean): void => {
+    for (const b of buttons) b.disabled = true;
+    error.hidden = true;
+    action()
+      .then(() => {
+        if (closeAfter) handle.close();
+      })
+      .catch(fail)
+      .finally(() => {
+        for (const b of buttons) b.disabled = false;
+      });
+  };
+
+  const editBtn = button("Edit", "ghc-button", () => startEdit());
+  const resolveBtn = button("Resolve", "ghc-button", () => {
+    run(() => cb.onResolve(), [editBtn, resolveBtn, deleteBtn], true);
+  });
+  const deleteBtn = button("Delete", "ghc-button", () => {
+    if (!window.confirm("Retract this annotation? Its issue will be closed as not planned.")) return;
+    run(() => cb.onRetract(), [editBtn, resolveBtn, deleteBtn], true);
+  });
+  actions.appendChild(editBtn);
+  actions.appendChild(resolveBtn);
+  actions.appendChild(deleteBtn);
+  box.appendChild(actions);
+  box.appendChild(error);
+
+  function startEdit(): void {
+    actions.hidden = true;
+    comment.hidden = true;
+    const editor = el("div", "ghc-popover__editor");
+    const textarea = el("textarea", "ghc-textarea");
+    textarea.value = commentText;
+    editor.appendChild(textarea);
+    const editActions = el("div", "ghc-popover__actions");
+    const closeEditor = (): void => {
+      editor.remove();
+      actions.hidden = false;
+      comment.hidden = false;
+    };
+    const save = button("Save", "ghc-button ghc-button--primary", () => {
+      save.disabled = true;
+      cancel.disabled = true;
+      error.hidden = true;
+      cb.onEdit(textarea.value)
+        .then(() => {
+          setComment(textarea.value.trim());
+          closeEditor();
+        })
+        .catch((e: unknown) => {
+          fail(e);
+          save.disabled = false;
+          cancel.disabled = false;
+        });
+    });
+    const cancel = button("Cancel", "ghc-button", closeEditor);
+    editActions.appendChild(save);
+    editActions.appendChild(cancel);
+    editor.appendChild(editActions);
+    box.insertBefore(editor, actions);
+    textarea.focus();
+  }
+
   return handle;
 }
 

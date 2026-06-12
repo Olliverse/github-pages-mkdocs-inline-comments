@@ -91,7 +91,40 @@ export function createController(cfg: WidgetConfig): Controller {
   }
 
   function openDetail(annotation: Annotation, rect: DOMRect): void {
-    showDetail(annotation, rect);
+    showDetail(annotation, rect, {
+      onEdit: (newComment) => updateComment(annotation, newComment),
+      onResolve: () => closeAnnotation(annotation, "completed"),
+      onRetract: () => closeAnnotation(annotation, "not_planned"),
+    });
+  }
+
+  function refreshPanelItems(): void {
+    panel?.setItems(annotations.map((a) => ({ annotation: a, anchored: anchored.has(a.issueNumber) })));
+  }
+
+  async function updateComment(annotation: Annotation, newComment: string): Promise<void> {
+    const body = buildIssueBody(newComment, annotation.data, {
+      pageHref: pageHref(),
+      rawBlock: annotation.rawBlock,
+    });
+    const updated = await client.updateIssueBody(cfg.repo, annotation.issueNumber, body);
+    const parsed = parseIssueBody(updated.body ?? body) ?? parseIssueBody(body);
+    if (parsed) {
+      annotation.comment = parsed.comment;
+      annotation.rawBlock = parsed.rawBlock;
+    } else {
+      annotation.comment = newComment.trim();
+    }
+    refreshPanelItems();
+  }
+
+  async function closeAnnotation(annotation: Annotation, reason: "completed" | "not_planned"): Promise<void> {
+    await client.closeIssue(cfg.repo, annotation.issueNumber, reason);
+    annotations = annotations.filter((a) => a.issueNumber !== annotation.issueNumber);
+    cleanups.get(annotation.issueNumber)?.();
+    cleanups.delete(annotation.issueNumber);
+    anchored.delete(annotation.issueNumber);
+    refreshPanelItems();
   }
 
   function onAnnotate(range: Range): void {
