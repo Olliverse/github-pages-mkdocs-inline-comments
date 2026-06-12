@@ -1,4 +1,5 @@
 import { readConfig } from "./config";
+import { createController } from "./controller";
 
 declare global {
   interface Window {
@@ -15,11 +16,7 @@ function boot(): void {
   }
   const cfg = readConfig(document);
   if (!cfg) return;
-  teardown = start(cfg);
-}
-
-function start(_cfg: ReturnType<typeof readConfig>): () => void {
-  return () => {};
+  teardown = createController(cfg).start();
 }
 
 function onReady(): void {
