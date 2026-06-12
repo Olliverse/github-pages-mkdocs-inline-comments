@@ -1,4 +1,13 @@
 :root {
+  /* Literal light-theme fallbacks for non-Material themes; on Material the [data-md-color-scheme] blocks below win via cascade. */
+  --ghc-bg: #ffffff;
+  --ghc-fg: #1f2933;
+  --ghc-fg-light: #5f6c7b;
+  --ghc-accent: #4051b5;
+  --ghc-accent-on: #ffffff;
+  --ghc-border: rgba(31, 41, 51, 0.1);
+  --ghc-hover: rgba(31, 41, 51, 0.06);
+  --ghc-accent-ghost: rgba(64, 81, 181, 0.14);
   --ghc-highlight-bg: rgba(255, 196, 0, 0.35);
   --ghc-highlight-bg-hover: rgba(255, 196, 0, 0.55);
   --ghc-error: #c92a2a;
