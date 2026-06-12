@@ -27,6 +27,7 @@ jobs:
         with:
           node-version: "22"
       - run: pip install -r requirements.txt
+      - run: pip install -e .
       - run: npm ci
       - run: echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
       - run: mkdocs build --strict

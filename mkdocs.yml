@@ -45,6 +45,7 @@ theme:
 
 plugins:
   - search
+  - inline-comments
   - likec4:
       use_dot: false
   - panzoom:

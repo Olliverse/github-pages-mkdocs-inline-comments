@@ -29,4 +29,5 @@ RUN npm ci
 ENV PATH="/docs/node_modules/.bin:${PATH}"
 
 EXPOSE 8000
-CMD ["mkdocs", "serve", "-a", "0.0.0.0:8000", "--livereload"]
+# The inline-comments plugin sources arrive via the bind mount, so install at container start.
+CMD ["sh", "-c", "pip install -q -e . && mkdocs serve -a 0.0.0.0:8000 --livereload"]
