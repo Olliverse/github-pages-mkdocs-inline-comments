@@ -152,7 +152,8 @@ def test_disabled_is_inert(tmp_path):
     cfg = make_mkdocs_config(tmp_path)
     plugin.on_config(cfg)
     assert cfg.extra_javascript == []
-    assert plugin.on_files(Files([]), config=cfg) == Files([]) or len(plugin.on_files(Files([]), config=cfg)) == 0
+    files = plugin.on_files(Files([]), config=cfg)
+    assert len(files) == 0
     file = File("use-cases.md", cfg.docs_dir, cfg.site_dir, cfg.use_directory_urls)
     page = Page("Title", file, cfg)
     assert plugin.on_page_content("<p>body</p>", page=page, config=cfg, files=Files([])) == "<p>body</p>"
