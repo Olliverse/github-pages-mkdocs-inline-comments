@@ -194,7 +194,9 @@ export function createController(cfg: WidgetConfig): Controller {
     const probedUser = await probe.getUser();
     tokens.set(token);
     user = probedUser;
-    ensurePanel().setUser(user.login);
+    const view = ensurePanel();
+    view.setHasToken(true);
+    view.setUser(user.login);
     await loadAnnotations();
   }
 
@@ -252,7 +254,9 @@ export function createController(cfg: WidgetConfig): Controller {
     contentRoot = resolveContentRoot();
     fab = createFab(contentRoot, onAnnotate);
     if (tokens.get()) {
-      ensurePanel().setLoading(true);
+      const view = ensurePanel();
+      view.setHasToken(true);
+      view.setLoading(true);
       void resume();
     }
     return () => {

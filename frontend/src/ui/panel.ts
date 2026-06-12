@@ -13,6 +13,7 @@ export interface PanelCallbacks {
 
 export interface Panel {
   setUser(login: string | null): void;
+  setHasToken(value: boolean): void;
   setItems(items: PanelItem[]): void;
   setError(message: string | null): void;
   setLoading(loading: boolean): void;
@@ -30,6 +31,7 @@ export function createPanel(cb: PanelCallbacks): Panel {
   let error: string | null = null;
   let loading = false;
   let login: string | null = null;
+  let hasToken = false;
 
   const toggle = button("", "ghc-panel-toggle", () => {
     open = !open;
@@ -57,8 +59,9 @@ export function createPanel(cb: PanelCallbacks): Panel {
     const header = el("header", "ghc-panel__header");
     header.appendChild(el("strong", "ghc-panel__title", "Review comments"));
     if (login) {
-      const who = el("span", "ghc-panel__user", `@${login}`);
-      header.appendChild(who);
+      header.appendChild(el("span", "ghc-panel__user", `@${login}`));
+    }
+    if (login || hasToken) {
       header.appendChild(button("Sign out", "ghc-button ghc-button--quiet", () => cb.onSignOut()));
     }
     panel.appendChild(header);
@@ -107,6 +110,10 @@ export function createPanel(cb: PanelCallbacks): Panel {
   return {
     setUser(value: string | null): void {
       login = value;
+      render();
+    },
+    setHasToken(value: boolean): void {
+      hasToken = value;
       render();
     },
     setItems(value: PanelItem[]): void {
