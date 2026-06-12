@@ -6,25 +6,32 @@ export interface PopoverHandle {
   readonly body: HTMLElement;
 }
 
-let active: { box: HTMLElement; dispose(): void } | null = null;
+const POPOVER_WIDTH = 360;
+
+let active: { box: HTMLElement; dispose(): void; onClose?: () => void } | null = null;
 
 export function closePopover(): void {
   if (active) {
-    active.dispose();
-    active.box.remove();
+    const current = active;
     active = null;
+    current.dispose();
+    current.box.remove();
+    current.onClose?.();
   }
 }
 
-export function openPopover(anchorRect: DOMRect, className: string): PopoverHandle {
+export function openPopover(anchorRect: DOMRect, className: string, onClose?: () => void): PopoverHandle {
   closePopover();
   const box = el("div", `ghc-popover ${className}`);
   box.setAttribute("data-ghc-ui", "");
   const margin = 8;
-  const width = 360;
+  box.style.width = `${POPOVER_WIDTH}px`;
   const left = Math.max(
     margin + window.scrollX,
-    Math.min(anchorRect.left + window.scrollX, window.scrollX + window.innerWidth - width - margin),
+    Math.min(
+      anchorRect.left + window.scrollX,
+      window.scrollX + window.innerWidth - POPOVER_WIDTH - margin,
+    ),
   );
   box.style.left = `${left}px`;
   box.style.top = `${anchorRect.bottom + window.scrollY + margin}px`;
@@ -42,7 +49,7 @@ export function openPopover(anchorRect: DOMRect, className: string): PopoverHand
     document.removeEventListener("mousedown", onMouseDown, true);
     document.removeEventListener("keydown", onKeyDown, true);
   };
-  active = { box, dispose };
+  active = { box, dispose, onClose };
   return { body: box, close: closePopover };
 }
 
@@ -59,10 +66,11 @@ export interface DetailCallbacks {
   onEdit(newComment: string): Promise<void>;
   onResolve(): Promise<void>;
   onRetract(): Promise<void>;
+  onClosed?(): void;
 }
 
 export function showDetail(annotation: Annotation, anchorRect: DOMRect, cb: DetailCallbacks): PopoverHandle {
-  const handle = openPopover(anchorRect, "ghc-popover--detail");
+  const handle = openPopover(anchorRect, "ghc-popover--detail", cb.onClosed);
   const box = handle.body;
   renderAnnotationHeader(box, annotation);
   let commentText = annotation.comment;

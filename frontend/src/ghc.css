@@ -2,7 +2,13 @@
   --ghc-highlight-bg: rgba(255, 196, 0, 0.35);
   --ghc-highlight-bg-hover: rgba(255, 196, 0, 0.55);
   --ghc-error: #c92a2a;
-  --ghc-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  --ghc-radius-sm: 6px;
+  --ghc-radius-md: 10px;
+  --ghc-radius-lg: 14px;
+  --ghc-shadow-pop:
+    0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.1), 0 24px 60px rgba(0, 0, 0, 0.08);
+  --ghc-shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.05), -14px 0 40px rgba(0, 0, 0, 0.1);
+  --ghc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.08);
   --ghc-z: 1000;
 }
 
@@ -15,13 +21,16 @@
   --ghc-accent-on: var(--md-accent-bg-color);
   --ghc-border: color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
   --ghc-hover: color-mix(in srgb, var(--md-default-fg-color) 6%, transparent);
+  --ghc-accent-ghost: color-mix(in srgb, var(--md-accent-fg-color) 14%, transparent);
 }
 
 [data-md-color-scheme="slate"] {
   --ghc-error: #ff6b6b;
   --ghc-highlight-bg: rgba(255, 170, 50, 0.28);
   --ghc-highlight-bg-hover: rgba(255, 170, 50, 0.45);
-  --ghc-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.35);
+  --ghc-shadow-pop: 0 1px 2px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.35);
+  --ghc-shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.45), -16px 0 48px rgba(0, 0, 0, 0.4);
+  --ghc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 .ghc-highlight {
@@ -34,18 +43,34 @@
   background: var(--ghc-highlight-bg-hover);
 }
 
+.ghc-highlight--active,
+.ghc-highlight--active:hover {
+  background: rgba(255, 152, 0, 0.55);
+  border-bottom: 3px solid rgba(230, 110, 0, 1);
+  box-shadow: 0 0 0 2px rgba(255, 140, 0, 0.35);
+  border-radius: 3px;
+}
+
+[data-md-color-scheme="slate"] .ghc-highlight--active,
+[data-md-color-scheme="slate"] .ghc-highlight--active:hover {
+  background: rgba(255, 170, 50, 0.4);
+  border-bottom-color: rgba(255, 170, 50, 0.9);
+  box-shadow: 0 0 0 2px rgba(255, 170, 50, 0.35);
+}
+
 .ghc-button {
   font: inherit;
   font-size: 0.72rem;
   padding: 0.25rem 0.6rem;
   border: 1px solid var(--ghc-border);
-  border-radius: 4px;
+  border-radius: var(--ghc-radius-sm);
   background: var(--ghc-bg);
   color: var(--ghc-fg);
   cursor: pointer;
 }
 
 .ghc-button:hover {
+  background: var(--ghc-accent-ghost);
   border-color: var(--ghc-accent);
   color: var(--ghc-accent);
 }
@@ -57,8 +82,9 @@
 }
 
 .ghc-button--primary:hover {
+  background: color-mix(in srgb, var(--ghc-accent) 85%, var(--ghc-fg));
+  border-color: color-mix(in srgb, var(--ghc-accent) 85%, var(--ghc-fg));
   color: var(--ghc-accent-on);
-  opacity: 0.85;
 }
 
 .ghc-button--quiet {
@@ -80,7 +106,7 @@
   box-sizing: border-box;
   padding: 0.35rem 0.5rem;
   border: 1px solid var(--ghc-border);
-  border-radius: 4px;
+  border-radius: var(--ghc-radius-sm);
   background: var(--ghc-bg);
   color: var(--ghc-fg);
 }
@@ -99,13 +125,12 @@
 .ghc-popover {
   position: absolute;
   z-index: var(--ghc-z);
-  width: 360px;
   max-width: calc(100vw - 16px);
   background: var(--ghc-bg);
   color: var(--ghc-fg);
   border: 1px solid var(--ghc-border);
-  border-radius: 6px;
-  box-shadow: var(--ghc-shadow);
+  border-radius: var(--ghc-radius-md);
+  box-shadow: var(--ghc-shadow-pop);
   padding: 0.75rem;
   font-size: 0.72rem;
   line-height: 1.45;
@@ -162,7 +187,7 @@
   border-radius: 999px;
   background: var(--ghc-bg);
   color: var(--ghc-fg);
-  box-shadow: var(--ghc-shadow);
+  box-shadow: var(--ghc-shadow-sm);
   cursor: pointer;
   font: inherit;
   font-size: 0.8rem;
@@ -185,8 +210,8 @@
   background: var(--ghc-bg);
   color: var(--ghc-fg);
   border: 1px solid var(--ghc-border);
-  border-radius: 8px;
-  box-shadow: var(--ghc-shadow);
+  border-radius: var(--ghc-radius-lg);
+  box-shadow: var(--ghc-shadow-panel);
   padding: 0.75rem;
   font-size: 0.72rem;
   line-height: 1.45;
@@ -261,6 +286,6 @@
   color: var(--ghc-accent-on);
   font: inherit;
   font-size: 0.72rem;
-  box-shadow: var(--ghc-shadow);
+  box-shadow: var(--ghc-shadow-sm);
   cursor: pointer;
 }

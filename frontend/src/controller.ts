@@ -90,12 +90,24 @@ export function createController(cfg: WidgetConfig): Controller {
     }
   }
 
+  function setActiveHighlight(issueNumber: number | null): void {
+    for (const mark of contentRoot.querySelectorAll("mark.ghc-highlight--active")) {
+      mark.classList.remove("ghc-highlight--active");
+    }
+    if (issueNumber === null) return;
+    for (const mark of contentRoot.querySelectorAll(`mark.ghc-highlight[data-ghc-issue="${issueNumber}"]`)) {
+      mark.classList.add("ghc-highlight--active");
+    }
+  }
+
   function openDetail(annotation: Annotation, rect: DOMRect): void {
     showDetail(annotation, rect, {
       onEdit: (newComment) => updateComment(annotation, newComment),
       onResolve: () => closeAnnotation(annotation, "completed"),
       onRetract: () => closeAnnotation(annotation, "not_planned"),
+      onClosed: () => setActiveHighlight(null),
     });
+    setActiveHighlight(annotation.issueNumber);
   }
 
   function refreshPanelItems(): void {
