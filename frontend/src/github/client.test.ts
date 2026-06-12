@@ -100,6 +100,23 @@ function issue(number: number, extra?: Record<string, unknown>): Record<string, 
   };
 }
 
+describe("GitHubClient.getIssue", () => {
+  it("fetches a single issue by number", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(issue(7)));
+    vi.stubGlobal("fetch", fetchMock);
+    const got = await client().getIssue("o/r", 7);
+    expect(got).toEqual({ number: 7, html_url: "https://github.com/o/r/issues/7", body: "body 7", user: { login: "octocat" } });
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.github.com/repos/o/r/issues/7");
+    expect(init.method).toBe("GET");
+  });
+
+  it("rejects malformed issue responses", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ unexpected: true })));
+    await expect(client().getIssue("o/r", 7)).rejects.toThrow("Unexpected response");
+  });
+});
+
 describe("GitHubClient.listOpenIssues", () => {
   it("requests by label and state and filters pull requests", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse([issue(1), issue(2, { pull_request: {} })]));

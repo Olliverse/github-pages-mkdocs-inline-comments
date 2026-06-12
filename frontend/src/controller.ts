@@ -103,14 +103,20 @@ export function createController(cfg: WidgetConfig): Controller {
   }
 
   async function updateComment(annotation: Annotation, newComment: string): Promise<void> {
-    const body = buildIssueBody(newComment, annotation.data, {
+    const fresh = await client.getIssue(cfg.repo, annotation.issueNumber);
+    const freshParsed = fresh.body === null ? null : parseIssueBody(fresh.body);
+    if (!freshParsed) {
+      throw new Error("The issue no longer carries readable annotation data; edit it on GitHub instead.");
+    }
+    const body = buildIssueBody(newComment, freshParsed.data, {
       pageHref: pageHref(),
-      rawBlock: annotation.rawBlock,
+      rawBlock: freshParsed.rawBlock,
     });
     const updated = await client.updateIssueBody(cfg.repo, annotation.issueNumber, body);
     const parsed = parseIssueBody(updated.body ?? body) ?? parseIssueBody(body);
     if (parsed) {
       annotation.comment = parsed.comment;
+      annotation.data = parsed.data;
       annotation.rawBlock = parsed.rawBlock;
     } else {
       annotation.comment = newComment.trim();

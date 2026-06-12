@@ -104,6 +104,13 @@ export class GitHubClient {
     return { login };
   }
 
+  async getIssue(repo: string, issueNumber: number): Promise<GitHubIssue> {
+    const { json } = await this.request("GET", `${this.baseUrl}/repos/${repo}/issues/${issueNumber}`);
+    const issue = toIssue(json);
+    if (!issue) throw new Error("Unexpected response for issue lookup");
+    return issue;
+  }
+
   async listOpenIssues(repo: string, label: string): Promise<GitHubIssue[]> {
     const issues: GitHubIssue[] = [];
     let url: string | null = `${this.baseUrl}/repos/${repo}/issues?state=open&labels=${encodeURIComponent(label)}&per_page=100`;
