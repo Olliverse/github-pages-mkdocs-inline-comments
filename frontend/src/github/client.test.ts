@@ -32,6 +32,7 @@ describe("GitHubClient headers", () => {
     expect(headers["Authorization"]).toBe("Bearer tok-123");
     expect(headers["Accept"]).toBe("application/vnd.github+json");
     expect(headers["X-GitHub-Api-Version"]).toBe("2022-11-28");
+    expect(init.redirect).toBe("error");
   });
 
   it("omits the authorization header without a token", async () => {
@@ -135,15 +136,18 @@ describe("GitHubClient.listOpenIssues", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("caps pagination at ten pages", async () => {
+  it("caps pagination at ten pages and warns about truncation", async () => {
     const fetchMock = vi.fn().mockImplementation(() =>
       Promise.resolve(
         jsonResponse([issue(1)], { headers: { link: '<https://api.github.com/repos/o/r/issues?page=2>; rel="next"' } }),
       ),
     );
     vi.stubGlobal("fetch", fetchMock);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     await client().listOpenIssues("o/r", "docs-review");
     expect(fetchMock).toHaveBeenCalledTimes(10);
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
   });
 });
 

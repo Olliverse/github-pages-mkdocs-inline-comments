@@ -16,7 +16,14 @@ export function button(label: string, className: string, onClick: () => void): H
   return b;
 }
 
-export function link(href: string, text: string, className?: string): HTMLAnchorElement {
+export function link(href: string, text: string, className?: string): HTMLAnchorElement | HTMLSpanElement {
+  let url: URL;
+  try {
+    url = new URL(href, location.href);
+  } catch {
+    return el("span", className, text);
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return el("span", className, text);
   const a = el("a", className, text);
   a.href = href;
   a.target = "_blank";

@@ -75,6 +75,7 @@ export class GitHubClient {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
+      redirect: "error",
     });
     if (!res.ok) {
       let apiMessage = `GitHub API responded with HTTP ${res.status}`;
@@ -115,6 +116,7 @@ export class GitHubClient {
       }
       url = this.nextLink(headers.get("link"));
     }
+    if (url !== null) console.warn(`ghc: stopped listing issues after ${MAX_PAGES} pages; annotations may be missing`);
     return issues;
   }
 
