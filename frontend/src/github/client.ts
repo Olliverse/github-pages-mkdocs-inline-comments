@@ -16,13 +16,27 @@ export class GitHubApiError extends Error {
   readonly apiMessage: string;
   readonly rateLimited: boolean;
 
-  constructor(status: number, apiMessage: string, rateLimited: boolean) {
-    super(apiMessage);
+  constructor(status: number, apiMessage: string, rateLimited: boolean, message = apiMessage) {
+    super(message);
     this.name = "GitHubApiError";
     this.status = status;
     this.apiMessage = apiMessage;
     this.rateLimited = rateLimited;
   }
+}
+
+function rateLimitWaitSeconds(headers: Headers): number | null {
+  const retryAfter = headers.get("retry-after");
+  if (retryAfter !== null && /^\d+$/.test(retryAfter.trim())) return Number(retryAfter.trim());
+  const reset = headers.get("x-ratelimit-reset");
+  if (reset !== null && /^\d+$/.test(reset.trim())) return Number(reset.trim()) - Math.floor(Date.now() / 1000);
+  return null;
+}
+
+function rateLimitMessage(headers: Headers): string {
+  const seconds = rateLimitWaitSeconds(headers);
+  if (seconds === null || seconds < 0) return "GitHub rate limit exceeded — try again later";
+  return `GitHub rate limit exceeded — try again in ${Math.max(1, Math.ceil(seconds / 60))} min`;
 }
 
 const MAX_PAGES = 10;
@@ -91,7 +105,12 @@ export class GitHubClient {
       const rateLimited =
         res.status === 429 ||
         (res.status === 403 && res.headers.get("x-ratelimit-remaining") === "0");
-      throw new GitHubApiError(res.status, apiMessage, rateLimited);
+      throw new GitHubApiError(
+        res.status,
+        apiMessage,
+        rateLimited,
+        rateLimited ? rateLimitMessage(res.headers) : apiMessage,
+      );
     }
     if (res.status === 204) return { json: null, headers: res.headers };
     return { json: await res.json(), headers: res.headers };

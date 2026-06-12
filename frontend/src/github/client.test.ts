@@ -76,6 +76,50 @@ describe("GitHubClient error mapping", () => {
     expect(err.rateLimited).toBe(false);
   });
 
+  it("maps 429 with retry-after to a human-readable wait message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse({ message: "API rate limit exceeded" }, { status: 429, headers: { "retry-after": "120" } }),
+      ),
+    );
+    const err = (await client().getUser().catch((e: unknown) => e)) as GitHubApiError;
+    expect(err.rateLimited).toBe(true);
+    expect(err.message).toBe("GitHub rate limit exceeded — try again in 2 min");
+    expect(err.apiMessage).toBe("API rate limit exceeded");
+  });
+
+  it("derives the wait from x-ratelimit-reset on a 403 rate limit", async () => {
+    const now = vi.spyOn(Date, "now").mockReturnValue(1_700_000_000_000);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(
+          { message: "API rate limit exceeded" },
+          { status: 403, headers: { "x-ratelimit-remaining": "0", "x-ratelimit-reset": "1700000300" } },
+        ),
+      ),
+    );
+    const err = (await client().getUser().catch((e: unknown) => e)) as GitHubApiError;
+    expect(err.message).toBe("GitHub rate limit exceeded — try again in 5 min");
+    now.mockRestore();
+  });
+
+  it("falls back to a generic rate limit message without reset headers", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(jsonResponse({ message: "too many requests" }, { status: 429 })),
+    );
+    const err = (await client().getUser().catch((e: unknown) => e)) as GitHubApiError;
+    expect(err.message).toBe("GitHub rate limit exceeded — try again later");
+  });
+
+  it("keeps the api message for non-rate-limited errors", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ message: "Bad credentials" }, { status: 401 })));
+    const err = (await client().getUser().catch((e: unknown) => e)) as GitHubApiError;
+    expect(err.message).toBe("Bad credentials");
+  });
+
   it("maps 422 validation errors", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ message: "Validation Failed" }, { status: 422 })));
     const err = (await client().createIssue("o/r", "t", "b", ["l"]).catch((e: unknown) => e)) as GitHubApiError;
