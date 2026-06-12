@@ -16,9 +16,11 @@ nav:
       - ADR-002 — Frontend Widget Stack: adr/0002-frontend-stack.md
       - ADR-003 — Issues as Comment Store: adr/0003-issues-as-comment-store.md
       - ADR-004 — One Issue per Annotation: adr/0004-one-issue-per-annotation.md
+      - ADR-005 — Token Storage Hardening (open): adr/0005-token-storage-hardening.md
   - QDRs:
       - QDR-001 — Orphaned Annotations: qdr/0001-orphaned-annotations.md
       - QDR-002 — Silent Unauthenticated State: qdr/0002-silent-unauthenticated-state.md
+      - QDR-003 — Shared-Origin Token Exposure: qdr/0003-shared-origin-token-exposure.md
 
 theme:
   name: material
