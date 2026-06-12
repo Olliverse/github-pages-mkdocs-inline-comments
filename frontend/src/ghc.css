@@ -4,7 +4,8 @@
   --ghc-fg-light: var(--md-default-fg-color--light, #5f6b7a);
   --ghc-accent: var(--md-accent-fg-color, #4051b5);
   --ghc-border: var(--md-default-fg-color--lightest, #d4d9de);
-  --ghc-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  --ghc-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  --ghc-z: 1000;
 }
 
 .ghc-highlight {
@@ -15,4 +16,235 @@
 
 .ghc-highlight:hover {
   background: rgba(255, 196, 0, 0.55);
+}
+
+.ghc-button {
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--ghc-border);
+  border-radius: 4px;
+  background: var(--ghc-bg);
+  color: var(--ghc-fg);
+  cursor: pointer;
+}
+
+.ghc-button:hover {
+  border-color: var(--ghc-accent);
+  color: var(--ghc-accent);
+}
+
+.ghc-button--primary {
+  background: var(--ghc-accent);
+  border-color: var(--ghc-accent);
+  color: #ffffff;
+}
+
+.ghc-button--primary:hover {
+  color: #ffffff;
+  opacity: 0.85;
+}
+
+.ghc-button--quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ghc-fg-light);
+}
+
+.ghc-button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.ghc-input,
+.ghc-textarea {
+  font: inherit;
+  font-size: 0.72rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--ghc-border);
+  border-radius: 4px;
+  background: var(--ghc-bg);
+  color: var(--ghc-fg);
+}
+
+.ghc-textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.ghc-error {
+  color: #c92a2a;
+  font-size: 0.72rem;
+  margin: 0.4rem 0 0;
+}
+
+.ghc-popover {
+  position: absolute;
+  z-index: var(--ghc-z);
+  width: 360px;
+  max-width: calc(100vw - 16px);
+  background: var(--ghc-bg);
+  color: var(--ghc-fg);
+  border: 1px solid var(--ghc-border);
+  border-radius: 6px;
+  box-shadow: var(--ghc-shadow);
+  padding: 0.75rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.ghc-popover__quote,
+.ghc-panel__quote {
+  margin: 0 0 0.5rem;
+  padding: 0.25rem 0.6rem;
+  border-left: 3px solid var(--ghc-accent);
+  color: var(--ghc-fg-light);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.ghc-popover__comment {
+  margin: 0 0 0.5rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ghc-popover__comment--empty {
+  color: var(--ghc-fg-light);
+  font-style: italic;
+}
+
+.ghc-popover__meta,
+.ghc-panel__meta {
+  margin: 0 0 0.5rem;
+  color: var(--ghc-fg-light);
+}
+
+.ghc-popover__meta a,
+.ghc-panel__meta a {
+  color: var(--ghc-accent);
+}
+
+.ghc-popover__actions {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.ghc-panel-toggle {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: var(--ghc-z);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--ghc-border);
+  border-radius: 999px;
+  background: var(--ghc-bg);
+  color: var(--ghc-fg);
+  box-shadow: var(--ghc-shadow);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.ghc-panel-toggle__count {
+  font-size: 0.72rem;
+  color: var(--ghc-fg-light);
+}
+
+.ghc-panel {
+  position: fixed;
+  right: 1rem;
+  bottom: 3.6rem;
+  z-index: var(--ghc-z);
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--ghc-bg);
+  color: var(--ghc-fg);
+  border: 1px solid var(--ghc-border);
+  border-radius: 8px;
+  box-shadow: var(--ghc-shadow);
+  padding: 0.75rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.ghc-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.ghc-panel__title {
+  flex: 1;
+}
+
+.ghc-panel__user {
+  color: var(--ghc-fg-light);
+}
+
+.ghc-panel__empty {
+  margin: 0;
+  color: var(--ghc-fg-light);
+}
+
+.ghc-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ghc-panel__item {
+  padding: 0.5rem 0.25rem;
+  border-top: 1px solid var(--ghc-border);
+  cursor: pointer;
+}
+
+.ghc-panel__item:hover {
+  background: rgba(127, 127, 127, 0.08);
+}
+
+.ghc-panel__comment {
+  margin: 0 0 0.35rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ghc-panel__meta {
+  margin: 0;
+}
+
+.ghc-panel__orphan {
+  color: #c92a2a;
+}
+
+.ghc-token-form__intro,
+.ghc-token-form__link {
+  margin: 0 0 0.5rem;
+}
+
+.ghc-token-form .ghc-input {
+  margin-bottom: 0.5rem;
+}
+
+.ghc-fab {
+  position: absolute;
+  z-index: var(--ghc-z);
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--ghc-accent);
+  border-radius: 999px;
+  background: var(--ghc-accent);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.72rem;
+  box-shadow: var(--ghc-shadow);
+  cursor: pointer;
 }
